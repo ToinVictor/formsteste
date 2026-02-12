@@ -2,29 +2,109 @@
 <html lang="pt-br">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Pré-Teste - Termodinâmica</title>
 
     <style>
       body {
-        font-family: Arial;
+        font-family: Arial, sans-serif;
         margin: 20px;
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      h1 {
+        color: #333;
+        text-align: center;
+        border-bottom: 2px solid #007bff;
+        padding-bottom: 10px;
       }
       .questao {
-        margin-bottom: 20px;
+        margin-bottom: 25px;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        background-color: #f9f9f9;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .questao strong {
+        color: #007bff;
+        font-size: 1.1em;
+      }
+      .enunciado {
+        margin: 15px 0;
+        padding: 10px;
+        background-color: #fff;
+        border-left: 4px solid #007bff;
+        border-radius: 4px;
+        font-style: italic;
+        color: #555;
+      }
+      .alternativas {
+        margin-top: 15px;
         padding: 15px;
-        border: 1px solid #ccc;
-        border-radius: 8px;
+        background-color: #fff;
+        border-radius: 6px;
+      }
+      .alternativas label {
+        display: block;
+        margin: 8px 0;
+        padding: 8px;
+        border-radius: 4px;
+        transition: background-color 0.2s;
+      }
+      .alternativas label:hover {
+        background-color: #f0f8ff;
+      }
+      input[type="radio"] {
+        margin-right: 10px;
       }
       button {
-        padding: 10px 20px;
-        font-size: 16px;
+        display: block;
+        width: 100%;
+        padding: 15px 30px;
+        font-size: 18px;
+        font-weight: bold;
+        color: white;
+        background-color: #007bff;
+        border: none;
+        border-radius: 8px;
         cursor: pointer;
+        margin: 30px 0;
+        transition: background-color 0.3s;
+      }
+      button:hover {
+        background-color: #0056b3;
+      }
+      #resultado {
+        text-align: center;
+        padding: 20px;
+        margin: 20px 0;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 10px;
+        font-size: 1.5em;
       }
       #resultadoGeral {
-        margin-top: 30px;
-        padding: 15px;
+        margin-top: 40px;
+        padding: 25px;
         background: #f4f4f4;
-        border-radius: 8px;
+        border-radius: 10px;
+        border: 1px solid #ddd;
+      }
+      #resultadoGeral h2 {
+        color: #333;
+        border-bottom: 2px solid #28a745;
+        padding-bottom: 10px;
+      }
+      #dadosGerais {
+        font-size: 0.95em;
+        line-height: 1.6;
+      }
+      .gabarito-indicador {
+        font-size: 0.85em;
+        color: #28a745;
+        margin-left: 10px;
       }
     </style>
   </head>
@@ -36,7 +116,7 @@
       <button type="button" onclick="corrigir()">Enviar e Ver Resultado</button>
     </form>
 
-    <h2 id="resultado"></h2>
+    <div id="resultado"></div>
 
     <div id="resultadoGeral">
       <h2>Resultados Gerais da Turma</h2>
@@ -53,7 +133,7 @@
         onValue,
       } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-database.js";
 
-      // 🔥 SUA CONFIGURAÇÃO (JÁ CORRETA)
+      // 🔥 CONFIGURAÇÃO FIREBASE
       const firebaseConfig = {
         apiKey: "AIzaSyCU5KJPxtb99hlzfq6JZVx-wPThWDpYcEQ",
         authDomain: "airtonprojeto-e08ed.firebaseapp.com",
@@ -82,7 +162,7 @@
         8: "B",
         9: "D",
         10: "C",
-        11: "D",
+        11: "C",
         12: "A",
         13: "A",
         14: "B",
@@ -90,25 +170,176 @@
         16: "C",
       };
 
-      // ---------------- ALTERNATIVAS ----------------
-      const alternativas = {
-        1: ["A", "B", "C", "D"],
-        2: ["A", "B", "C", "D"],
-        3: ["A", "B", "C", "D"],
-        4: ["A", "B", "C", "D"],
-        5: ["A", "B", "C", "D"],
-        6: ["A", "B", "C", "D"],
-        7: ["A", "B", "C", "D"],
-        8: ["A", "B", "C", "D"],
-        9: ["A", "B", "C", "D"],
-        10: ["A", "B", "C", "D"],
-        11: ["A", "B", "C", "D"],
-        12: ["A", "B", "C", "D"],
-        13: ["A", "B", "C", "D"],
-        14: ["A", "B", "C", "D"],
-        15: ["A", "B", "C", "D"],
-        16: ["A", "B", "C", "D"],
-        17: ["A", "B", "C"],
+      // ---------------- ENUNCIADOS E ALTERNATIVAS ----------------
+      const questoes = {
+        1: {
+          enunciado: "Podemos dizer que a termodinâmica estuda principalmente:",
+          alternativas: {
+            A: "O movimento dos planetas.",
+            B: "A evolução das espécies.",
+            C: "O calor, a energia e suas transformações.",
+            D: "A formação das estrelas.",
+          },
+        },
+        2: {
+          enunciado:
+            "Na maioria das vezes, usamos calor e temperatura para definir o mesmo evento, entretanto, essa utilização não está correta. Marque o item que melhor define os conceitos de calor e temperatura, respectivamente:",
+          alternativas: {
+            A: "Energia elétrica transferida entre objetos / Energia quântica associada a agitação de objetos.",
+            B: "Energia cinética transferida entre corpos. / Energia quântica associada a agitação de corpos.",
+            C: "Energia térmica transferida entre objetos. / Energia cinética associada a agitação das moléculas.",
+            D: "Energia cinética transferida entre objetos. / Energia elétrica associada a agitação de corpos.",
+          },
+        },
+        3: {
+          enunciado:
+            "Observe as diferenças entre temperaturas mostradas pela imagem abaixo. Sobre as afirmativas a seguir, assinale o item CORRETO sobre temperatura:",
+          alternativas: {
+            A: "Quanto maior a agitação das moléculas, maior será sua temperatura.",
+            B: "Quanto menor a agitação das moléculas, maior será sua temperatura.",
+            C: "A temperatura é o mesmo que calor quando elevados.",
+            D: "A temperatura é o mesmo que calor quando for mínima.",
+          },
+        },
+        4: {
+          enunciado:
+            "Um copo com leite quente é colocado em uma bacia de água fria com o objetivo de resfriá-lo. Passando um tempo, percebe-se que tanto o copo quanto a água da bacia estão com a mesma temperatura. Diante dessa situação, qual aspecto explica o fato de o copo e água estarem com temperaturas iguais?",
+          alternativas: {
+            A: "A água esfriar o copo quente.",
+            B: "A água estar mais fria que o copo.",
+            C: "O copo estar mais quente que a água.",
+            D: "A troca de calor entre o copo quente e a água fria.",
+          },
+        },
+        5: {
+          enunciado:
+            "Imagine que há dois corpos com temperaturas diferentes em contato. No instante, ocorre a transferência de calor de um para outro, até chegarem à mesma temperatura. Essa transferência de calor é chamada de:",
+          alternativas: {
+            A: "difusão térmica.",
+            B: "equilíbrio térmico.",
+            C: "convecção térmica.",
+            D: "energia térmica.",
+          },
+        },
+        6: {
+          enunciado:
+            "De acordo com a Primeira Lei da Termodinâmica (Lei da Conservação da Energia), o que acontece com a energia elétrica que 'some' quando você liga uma lâmpada comum?",
+          alternativas: {
+            A: "Ela é completamente convertida em luz, sem nenhum calor gerado.",
+            B: "Ela é transformada em outras formas de energia, como luz e calor.",
+            C: "A lâmpada cria a energia que é transformada em luz.",
+            D: "Ela é destruída assim que a lâmpada se apaga.",
+          },
+        },
+        7: {
+          enunciado:
+            "A Segunda Lei da Termodinâmica é frequentemente observada no dia a dia. Qual das situações abaixo é um exemplo direto e espontâneo dessa lei?",
+          alternativas: {
+            A: "O vapor de água quente de uma xícara de café esfriando até atingir a temperatura ambiente.",
+            B: "Um carro se movendo mais rápido porque o motorista pisou no acelerador.",
+            C: "Uma bola quicando no chão e voltando exatamente para a mesma altura de onde foi solta.",
+            D: "Uma bateria de celular sendo carregada ao ser conectada a uma tomada.",
+          },
+        },
+        8: {
+          enunciado:
+            "O conceito de Entropia está relacionado à desordem ou aleatoriedade de um sistema. Em qual das situações abaixo a entropia do sistema está naturalmente aumentando?",
+          alternativas: {
+            A: "Guardar todos os livros na prateleira, colocando a sala em ordem.",
+            B: "Um cubo de gelo derretendo e se transformando em água líquida.",
+            C: "Uma árvore crescendo e absorvendo nutrientes para formar uma estrutura organizada.",
+            D: "Um gás sendo totalmente comprimido e mantido em um pequeno e apertado recipiente.",
+          },
+        },
+        9: {
+          enunciado:
+            "Imagine que você quebrou um prato de cerâmica. Por que é impossível, de acordo com as Leis da Termodinâmica, que os pedaços se juntem espontaneamente e o prato se 'desquebre'?",
+          alternativas: {
+            A: "Porque o prato quebrado não tem mais energia potencial para a reorganização.",
+            B: "Porque o calor que foi liberado no momento da quebra não pode ser recuperado.",
+            C: "Porque o processo violaria a Primeira Lei da Termodinâmica, criando energia do nada.",
+            D: "Porque a quebra é um processo que aumentou a entropia do sistema e, naturalmente, o sistema não volta a um estado de menor entropia.",
+          },
+        },
+        10: {
+          enunciado:
+            "A Seta do Tempo é a ideia de que o tempo flui em uma única direção, do passado para o futuro. O que a Termodinâmica sugere ser a causa dessa direção única do tempo?",
+          alternativas: {
+            A: "A conservação de massa e volume em todas as reações químicas.",
+            B: "O fato de a energia total no universo estar sempre diminuindo.",
+            C: "O aumento constante da entropia (desordem) em todo o universo.",
+            D: "A velocidade da luz no vácuo.",
+          },
+        },
+        11: {
+          enunciado:
+            "Por que é impossível construir um motor de carro que converta 100% da energia do combustível em movimento, sem liberar nenhum calor para o ambiente?",
+          alternativas: {
+            A: "O motor precisa do calor liberado para funcionar, não há outra forma.",
+            B: "Porque o calor é uma forma de energia mais valiosa que o movimento.",
+            C: "Isso violaria a Segunda Lei, que estabelece que sempre haverá uma energia dispersa (calor) em qualquer processo de transformação.",
+            D: "Isso violaria a Primeira Lei, pois energia seria perdida no processo.",
+          },
+        },
+        12: {
+          enunciado:
+            "Você mistura um pouco de tinta azul e tinta amarela em um pote, e elas se tornam espontaneamente tinta verde. Tentar separá-las para que voltem a ser azul e amarela é muito difícil. Este processo de mistura está ligado ao conceito de:",
+          alternativas: {
+            A: "Aumento de Entropia.",
+            B: "Trabalho Mecânico.",
+            C: "Conservação de Energia.",
+            D: "Fluxo de Calor do Frio para o Quente.",
+          },
+        },
+        13: {
+          enunciado:
+            "A Primeira Lei da Termodinâmica (Conservação de Energia) é um obstáculo para qual tipo de invenção impossível?",
+          alternativas: {
+            A: "Um gerador de energia que cria energia a partir do nada e funciona para sempre.",
+            B: "Uma máquina que esfria uma bebida sem usar eletricidade.",
+            C: "Um motor que consome pouca gasolina.",
+            D: "Uma forma de energia que não produz calor.",
+          },
+        },
+        14: {
+          enunciado:
+            "Quando você coloca um pedaço de gelo em um copo de suco, o gelo absorve calor do suco e derrete. Qual das afirmações abaixo melhor explica esse fenômeno usando a Segunda Lei da Termodinâmica?",
+          alternativas: {
+            A: "O calor está sendo criado na interface entre o gelo e o suco.",
+            B: "O calor sempre se move espontaneamente do corpo com maior temperatura (suco) para o de menor temperatura (gelo).",
+            C: "O suco e o gelo estão trocando entropia um com o outro.",
+            D: "O suco congela porque perde calor para o gelo.",
+          },
+        },
+        15: {
+          enunciado:
+            "A ferrugem (oxidação) em um prego de ferro ocorre lentamente com o tempo, e o processo inverso (transformar a ferrugem de volta em ferro e oxigênio puros) é muito difícil e requer gasto de energia. Isso demonstra o conceito de Seta do Tempo porque a ferrugem é um processo:",
+          alternativas: {
+            A: "Completamente reversível, apenas esperando o tempo suficiente.",
+            B: "Que só ocorre quando a temperatura está abaixo de zero.",
+            C: "Que viola a Primeira Lei da Termodinâmica, pois a massa é alterada.",
+            D: "Onde o nível de entropia (desordem) do sistema total aumenta, tornando o processo irreversível.",
+          },
+        },
+        16: {
+          enunciado:
+            "Um quarto arrumado, depois de alguns dias sem ninguém arrumar, tende a ficar bagunçado. Isso está relacionado ao fato de que:",
+          alternativas: {
+            A: "A natureza tende à organização.",
+            B: "A desordem tende a diminuir sozinha.",
+            C: "A desordem tende a aumentar com o tempo.",
+            D: "O quarto produz energia.",
+          },
+        },
+        17: {
+          enunciado:
+            "Você já tinha estudado algum desses conteúdos em sala de aula?",
+          alternativas: {
+            A: "Sim, a maioria",
+            B: "Sim, a minoria",
+            C: "Não lembro",
+          },
+        },
       };
 
       // ---------------- MONTA QUESTÕES ----------------
@@ -117,16 +348,25 @@
       for (let i = 1; i <= 17; i++) {
         let div = document.createElement("div");
         div.className = "questao";
-        div.innerHTML += "<strong>Questão " + i + "</strong><br><br>";
 
-        alternativas[i].forEach((letra) => {
+        // Título da questão
+        div.innerHTML = `<strong>Questão ${i}</strong>`;
+
+        // Enunciado
+        div.innerHTML += `<div class="enunciado">${questoes[i].enunciado}</div>`;
+
+        // Alternativas
+        div.innerHTML += `<div class="alternativas">`;
+
+        Object.entries(questoes[i].alternativas).forEach(([letra, texto]) => {
           div.innerHTML += `
-        <label>
-        <input type="radio" name="q${i}" value="${letra}">
-        ${letra}
-        </label><br>`;
+            <label>
+              <input type="radio" name="q${i}" value="${letra}">
+              <strong>${letra}</strong>) ${texto}
+            </label>`;
         });
 
+        div.innerHTML += `</div>`;
         container.appendChild(div);
       }
 
@@ -134,36 +374,48 @@
       window.corrigir = function () {
         let acertos = 0;
         let respostasAluno = {};
+        let questoesRespondidas = 0;
 
         for (let i = 1; i <= 17; i++) {
           let resposta = document.querySelector(`input[name="q${i}"]:checked`);
           if (resposta) {
             respostasAluno["q" + i] = resposta.value;
+            questoesRespondidas++;
             if (i <= 16 && resposta.value === gabarito[i]) {
               acertos++;
             }
           }
         }
 
+        if (questoesRespondidas === 0) {
+          alert("Por favor, responda pelo menos uma questão!");
+          return;
+        }
+
         document.getElementById("resultado").innerHTML =
-          "Você acertou " + acertos + " de 16 questões.";
+          `✅ Você acertou ${acertos} de 16 questões!`;
 
         // 🔥 SALVA NO FIREBASE
         push(respostasRef, respostasAluno);
 
+        // Limpa o formulário
         document.getElementById("formulario").reset();
       };
 
       // ---------------- RESULTADOS GERAIS EM TEMPO REAL ----------------
       onValue(respostasRef, (snapshot) => {
         let dados = snapshot.val();
-        if (!dados) return;
+        if (!dados) {
+          document.getElementById("dadosGerais").innerHTML =
+            "<p>Aguardando respostas dos alunos...</p>";
+          return;
+        }
 
         let contagem = {};
 
         for (let i = 1; i <= 17; i++) {
           contagem[i] = {};
-          alternativas[i].forEach((l) => {
+          Object.keys(questoes[i].alternativas).forEach((l) => {
             contagem[i][l] = 0;
           });
         }
@@ -171,19 +423,33 @@
         for (let id in dados) {
           let resp = dados[id];
           for (let q in resp) {
-            let numero = q.replace("q", "");
+            let numero = parseInt(q.replace("q", ""));
             let letra = resp[q];
-            contagem[numero][letra]++;
+            if (contagem[numero] && contagem[numero][letra] !== undefined) {
+              contagem[numero][letra]++;
+            }
           }
         }
 
         let html = "";
         for (let i = 1; i <= 17; i++) {
-          html += "<strong>Questão " + i + "</strong><br>";
+          html += `<div style="margin-bottom: 20px;">`;
+          html += `<strong style="color: #007bff;">Questão ${i}</strong><br>`;
+          html += `<span style="color: #666; font-size: 0.9em;">${questoes[i].enunciado}</span><br>`;
+          html += `<div style="margin-top: 8px;">`;
+
           for (let letra in contagem[i]) {
-            html += letra + ": " + contagem[i][letra] + " respostas<br>";
+            let porcentagem = 0;
+            let total = Object.values(contagem[i]).reduce((a, b) => a + b, 0);
+            if (total > 0) {
+              porcentagem = ((contagem[i][letra] / total) * 100).toFixed(1);
+            }
+            html += `<span style="display: inline-block; margin-right: 15px;">
+              ${letra}: ${contagem[i][letra]} respostas (${porcentagem}%)
+            </span><br>`;
           }
-          html += "<br>";
+
+          html += `</div></div>`;
         }
 
         document.getElementById("dadosGerais").innerHTML = html;
