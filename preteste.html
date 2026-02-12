@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Pré-Teste - Termodinâmica</title>
+
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+      }
+
+      .questao {
+        margin-bottom: 20px;
+        padding: 15px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+      }
+
+      .correta {
+        background-color: #d4edda;
+      }
+
+      .errada {
+        background-color: #f8d7da;
+      }
+
+      button {
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>QUESTÕES DO PRÉ-TESTE</h1>
+
+    <form id="formulario">
+      <div id="questoes"></div>
+
+      <button type="button" onclick="corrigir()">Enviar e Ver Resultado</button>
+    </form>
+
+    <h2 id="resultado"></h2>
+
+    <script>
+      const gabarito = {
+        1: "C",
+        2: "C",
+        3: "A",
+        4: "D",
+        5: "B",
+        6: "B",
+        7: "A",
+        8: "B",
+        9: "D",
+        10: "C",
+        11: "D",
+        12: "A",
+        13: "A",
+        14: "B",
+        15: "D",
+        16: "C",
+      };
+
+      const perguntas = [
+        "1. Podemos dizer que a termodinâmica estuda principalmente:",
+        "2. Marque o item que melhor define os conceitos de calor e temperatura:",
+        "3. Sobre temperatura:",
+        "4. Por que copo e água ficam com mesma temperatura?",
+        "5. Essa transferência de calor é chamada de:",
+        "6. O que acontece com a energia da lâmpada?",
+        "7. Exemplo da Segunda Lei:",
+        "8. Quando a entropia aumenta?",
+        "9. Por que o prato não se 'desquebra'?",
+        "10. O que causa a Seta do Tempo?",
+        "11. Por que motor não é 100% eficiente?",
+        "12. Misturar tinta está ligado a:",
+        "13. Primeira Lei impede qual invenção?",
+        "14. Por que gelo derrete no suco?",
+        "15. Ferrugem demonstra:",
+        "16. Quarto bagunça porque:",
+        "17. Você já tinha estudado esses conteúdos?",
+      ];
+
+      const alternativas = {
+        1: [
+          "A) O movimento dos planetas.",
+          "B) A evolução das espécies.",
+          "C) O calor, a energia e suas transformações.",
+          "D) A formação das estrelas.",
+        ],
+        2: [
+          "A) Energia elétrica...",
+          "B) Energia cinética...",
+          "C) Energia térmica transferida / Energia cinética molecular.",
+          "D) Energia cinética / Energia elétrica.",
+        ],
+        3: [
+          "A) Maior agitação, maior temperatura.",
+          "B) Menor agitação, maior temperatura.",
+          "C) Temperatura é calor elevado.",
+          "D) Temperatura é calor mínimo.",
+        ],
+        4: [
+          "A) Água esfria o copo.",
+          "B) Água mais fria.",
+          "C) Copo mais quente.",
+          "D) Troca de calor.",
+        ],
+        5: [
+          "A) Difusão.",
+          "B) Equilíbrio térmico.",
+          "C) Convecção.",
+          "D) Energia térmica.",
+        ],
+        6: [
+          "A) Só luz.",
+          "B) Luz e calor.",
+          "C) Cria energia.",
+          "D) Destruída.",
+        ],
+        7: [
+          "A) Café esfriando.",
+          "B) Carro acelerando.",
+          "C) Bola mesma altura.",
+          "D) Celular carregando.",
+        ],
+        8: [
+          "A) Organizar livros.",
+          "B) Gelo derretendo.",
+          "C) Árvore crescendo.",
+          "D) Gás comprimido.",
+        ],
+        9: [
+          "A) Sem energia potencial.",
+          "B) Calor não recuperado.",
+          "C) Viola 1ª Lei.",
+          "D) Aumentou entropia.",
+        ],
+        10: [
+          "A) Conservação massa.",
+          "B) Energia diminuindo.",
+          "C) Aumento da entropia.",
+          "D) Velocidade da luz.",
+        ],
+        11: [
+          "A) Precisa calor.",
+          "B) Calor é valioso.",
+          "C) Viola 2ª Lei.",
+          "D) Viola 2ª Lei (energia dispersa).",
+        ],
+        12: [
+          "A) Aumento de Entropia.",
+          "B) Trabalho.",
+          "C) Conservação.",
+          "D) Fluxo frio-quente.",
+        ],
+        13: [
+          "A) Criar energia do nada.",
+          "B) Esfriar sem energia.",
+          "C) Motor econômico.",
+          "D) Energia sem calor.",
+        ],
+        14: [
+          "A) Calor criado.",
+          "B) Calor vai do quente para o frio.",
+          "C) Troca entropia.",
+          "D) Suco congela.",
+        ],
+        15: [
+          "A) Reversível.",
+          "B) Só abaixo zero.",
+          "C) Viola 1ª Lei.",
+          "D) Entropia aumenta.",
+        ],
+        16: [
+          "A) Natureza organiza.",
+          "B) Desordem diminui.",
+          "C) Desordem aumenta.",
+          "D) Produz energia.",
+        ],
+        17: ["A) Sim, a maioria", "B) Sim, a minoria", "C) Não lembro"],
+      };
+
+      const container = document.getElementById("questoes");
+
+      for (let i = 1; i <= 17; i++) {
+        let div = document.createElement("div");
+        div.className = "questao";
+        div.id = "q" + i;
+
+        div.innerHTML += "<strong>" + perguntas[i - 1] + "</strong><br><br>";
+
+        alternativas[i].forEach((alt) => {
+          let letra = alt.charAt(0);
+          div.innerHTML += `
+        <label>
+        <input type="radio" name="q${i}" value="${letra}">
+        ${alt}
+        </label><br>`;
+        });
+
+        container.appendChild(div);
+      }
+
+      function corrigir() {
+        let acertos = 0;
+
+        for (let i = 1; i <= 16; i++) {
+          let questaoDiv = document.getElementById("q" + i);
+          let resposta = document.querySelector(`input[name="q${i}"]:checked`);
+
+          questaoDiv.classList.remove("correta", "errada");
+
+          if (resposta) {
+            if (resposta.value === gabarito[i]) {
+              acertos++;
+              questaoDiv.classList.add("correta");
+            } else {
+              questaoDiv.classList.add("errada");
+            }
+          } else {
+            questaoDiv.classList.add("errada");
+          }
+        }
+
+        document.getElementById("resultado").innerHTML =
+          "Você acertou " + acertos + " de 16 questões.";
+      }
+    </script>
+  </body>
+</html>
