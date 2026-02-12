@@ -6,44 +6,71 @@
 
     <style>
       body {
-        font-family: Arial, sans-serif;
+        font-family: Arial;
         margin: 20px;
       }
-
       .questao {
         margin-bottom: 20px;
         padding: 15px;
         border: 1px solid #ccc;
         border-radius: 8px;
       }
-
-      .correta {
-        background-color: #d4edda;
-      }
-
-      .errada {
-        background-color: #f8d7da;
-      }
-
       button {
         padding: 10px 20px;
         font-size: 16px;
         cursor: pointer;
       }
+      #resultadoGeral {
+        margin-top: 30px;
+        padding: 15px;
+        background: #f4f4f4;
+        border-radius: 8px;
+      }
     </style>
   </head>
   <body>
-    <h1>QUESTÕES DO PRÉ-TESTE</h1>
+    <h1>PRÉ-TESTE - TERMODINÂMICA</h1>
 
     <form id="formulario">
       <div id="questoes"></div>
-
       <button type="button" onclick="corrigir()">Enviar e Ver Resultado</button>
     </form>
 
     <h2 id="resultado"></h2>
 
-    <script>
+    <div id="resultadoGeral">
+      <h2>Resultados Gerais da Turma</h2>
+      <div id="dadosGerais"></div>
+    </div>
+
+    <script type="module">
+      // 🔥 IMPORTA FIREBASE (VERSÃO 12.9.0)
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+      import {
+        getDatabase,
+        ref,
+        push,
+        onValue,
+      } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-database.js";
+
+      // 🔥 SUA CONFIGURAÇÃO (JÁ CORRETA)
+      const firebaseConfig = {
+        apiKey: "AIzaSyCU5KJPxtb99hlzfq6JZVx-wPThWDpYcEQ",
+        authDomain: "airtonprojeto-e08ed.firebaseapp.com",
+        databaseURL: "https://airtonprojeto-e08ed-default-rtdb.firebaseio.com",
+        projectId: "airtonprojeto-e08ed",
+        storageBucket: "airtonprojeto-e08ed.firebasestorage.app",
+        messagingSenderId: "340143929205",
+        appId: "1:340143929205:web:bd6eb2c545605641e1453c",
+        measurementId: "G-WVRLMJ5MCY",
+      };
+
+      // Inicializa Firebase
+      const app = initializeApp(firebaseConfig);
+      const database = getDatabase(app);
+      const respostasRef = ref(database, "respostas");
+
+      // ---------------- GABARITO ----------------
       const gabarito = {
         1: "C",
         2: "C",
@@ -63,171 +90,104 @@
         16: "C",
       };
 
-      const perguntas = [
-        "1. Podemos dizer que a termodinâmica estuda principalmente:",
-        "2. Marque o item que melhor define os conceitos de calor e temperatura:",
-        "3. Sobre temperatura:",
-        "4. Por que copo e água ficam com mesma temperatura?",
-        "5. Essa transferência de calor é chamada de:",
-        "6. O que acontece com a energia da lâmpada?",
-        "7. Exemplo da Segunda Lei:",
-        "8. Quando a entropia aumenta?",
-        "9. Por que o prato não se 'desquebra'?",
-        "10. O que causa a Seta do Tempo?",
-        "11. Por que motor não é 100% eficiente?",
-        "12. Misturar tinta está ligado a:",
-        "13. Primeira Lei impede qual invenção?",
-        "14. Por que gelo derrete no suco?",
-        "15. Ferrugem demonstra:",
-        "16. Quarto bagunça porque:",
-        "17. Você já tinha estudado esses conteúdos?",
-      ];
-
+      // ---------------- ALTERNATIVAS ----------------
       const alternativas = {
-        1: [
-          "A) O movimento dos planetas.",
-          "B) A evolução das espécies.",
-          "C) O calor, a energia e suas transformações.",
-          "D) A formação das estrelas.",
-        ],
-        2: [
-          "A) Energia elétrica...",
-          "B) Energia cinética...",
-          "C) Energia térmica transferida / Energia cinética molecular.",
-          "D) Energia cinética / Energia elétrica.",
-        ],
-        3: [
-          "A) Maior agitação, maior temperatura.",
-          "B) Menor agitação, maior temperatura.",
-          "C) Temperatura é calor elevado.",
-          "D) Temperatura é calor mínimo.",
-        ],
-        4: [
-          "A) Água esfria o copo.",
-          "B) Água mais fria.",
-          "C) Copo mais quente.",
-          "D) Troca de calor.",
-        ],
-        5: [
-          "A) Difusão.",
-          "B) Equilíbrio térmico.",
-          "C) Convecção.",
-          "D) Energia térmica.",
-        ],
-        6: [
-          "A) Só luz.",
-          "B) Luz e calor.",
-          "C) Cria energia.",
-          "D) Destruída.",
-        ],
-        7: [
-          "A) Café esfriando.",
-          "B) Carro acelerando.",
-          "C) Bola mesma altura.",
-          "D) Celular carregando.",
-        ],
-        8: [
-          "A) Organizar livros.",
-          "B) Gelo derretendo.",
-          "C) Árvore crescendo.",
-          "D) Gás comprimido.",
-        ],
-        9: [
-          "A) Sem energia potencial.",
-          "B) Calor não recuperado.",
-          "C) Viola 1ª Lei.",
-          "D) Aumentou entropia.",
-        ],
-        10: [
-          "A) Conservação massa.",
-          "B) Energia diminuindo.",
-          "C) Aumento da entropia.",
-          "D) Velocidade da luz.",
-        ],
-        11: [
-          "A) Precisa calor.",
-          "B) Calor é valioso.",
-          "C) Viola 2ª Lei.",
-          "D) Viola 2ª Lei (energia dispersa).",
-        ],
-        12: [
-          "A) Aumento de Entropia.",
-          "B) Trabalho.",
-          "C) Conservação.",
-          "D) Fluxo frio-quente.",
-        ],
-        13: [
-          "A) Criar energia do nada.",
-          "B) Esfriar sem energia.",
-          "C) Motor econômico.",
-          "D) Energia sem calor.",
-        ],
-        14: [
-          "A) Calor criado.",
-          "B) Calor vai do quente para o frio.",
-          "C) Troca entropia.",
-          "D) Suco congela.",
-        ],
-        15: [
-          "A) Reversível.",
-          "B) Só abaixo zero.",
-          "C) Viola 1ª Lei.",
-          "D) Entropia aumenta.",
-        ],
-        16: [
-          "A) Natureza organiza.",
-          "B) Desordem diminui.",
-          "C) Desordem aumenta.",
-          "D) Produz energia.",
-        ],
-        17: ["A) Sim, a maioria", "B) Sim, a minoria", "C) Não lembro"],
+        1: ["A", "B", "C", "D"],
+        2: ["A", "B", "C", "D"],
+        3: ["A", "B", "C", "D"],
+        4: ["A", "B", "C", "D"],
+        5: ["A", "B", "C", "D"],
+        6: ["A", "B", "C", "D"],
+        7: ["A", "B", "C", "D"],
+        8: ["A", "B", "C", "D"],
+        9: ["A", "B", "C", "D"],
+        10: ["A", "B", "C", "D"],
+        11: ["A", "B", "C", "D"],
+        12: ["A", "B", "C", "D"],
+        13: ["A", "B", "C", "D"],
+        14: ["A", "B", "C", "D"],
+        15: ["A", "B", "C", "D"],
+        16: ["A", "B", "C", "D"],
+        17: ["A", "B", "C"],
       };
 
+      // ---------------- MONTA QUESTÕES ----------------
       const container = document.getElementById("questoes");
 
       for (let i = 1; i <= 17; i++) {
         let div = document.createElement("div");
         div.className = "questao";
-        div.id = "q" + i;
+        div.innerHTML += "<strong>Questão " + i + "</strong><br><br>";
 
-        div.innerHTML += "<strong>" + perguntas[i - 1] + "</strong><br><br>";
-
-        alternativas[i].forEach((alt) => {
-          let letra = alt.charAt(0);
+        alternativas[i].forEach((letra) => {
           div.innerHTML += `
         <label>
         <input type="radio" name="q${i}" value="${letra}">
-        ${alt}
+        ${letra}
         </label><br>`;
         });
 
         container.appendChild(div);
       }
 
-      function corrigir() {
+      // ---------------- CORRIGIR E ENVIAR ----------------
+      window.corrigir = function () {
         let acertos = 0;
+        let respostasAluno = {};
 
-        for (let i = 1; i <= 16; i++) {
-          let questaoDiv = document.getElementById("q" + i);
+        for (let i = 1; i <= 17; i++) {
           let resposta = document.querySelector(`input[name="q${i}"]:checked`);
-
-          questaoDiv.classList.remove("correta", "errada");
-
           if (resposta) {
-            if (resposta.value === gabarito[i]) {
+            respostasAluno["q" + i] = resposta.value;
+            if (i <= 16 && resposta.value === gabarito[i]) {
               acertos++;
-              questaoDiv.classList.add("correta");
-            } else {
-              questaoDiv.classList.add("errada");
             }
-          } else {
-            questaoDiv.classList.add("errada");
           }
         }
 
         document.getElementById("resultado").innerHTML =
           "Você acertou " + acertos + " de 16 questões.";
-      }
+
+        // 🔥 SALVA NO FIREBASE
+        push(respostasRef, respostasAluno);
+
+        document.getElementById("formulario").reset();
+      };
+
+      // ---------------- RESULTADOS GERAIS EM TEMPO REAL ----------------
+      onValue(respostasRef, (snapshot) => {
+        let dados = snapshot.val();
+        if (!dados) return;
+
+        let contagem = {};
+
+        for (let i = 1; i <= 17; i++) {
+          contagem[i] = {};
+          alternativas[i].forEach((l) => {
+            contagem[i][l] = 0;
+          });
+        }
+
+        for (let id in dados) {
+          let resp = dados[id];
+          for (let q in resp) {
+            let numero = q.replace("q", "");
+            let letra = resp[q];
+            contagem[numero][letra]++;
+          }
+        }
+
+        let html = "";
+        for (let i = 1; i <= 17; i++) {
+          html += "<strong>Questão " + i + "</strong><br>";
+          for (let letra in contagem[i]) {
+            html += letra + ": " + contagem[i][letra] + " respostas<br>";
+          }
+          html += "<br>";
+        }
+
+        document.getElementById("dadosGerais").innerHTML = html;
+      });
     </script>
   </body>
 </html>
